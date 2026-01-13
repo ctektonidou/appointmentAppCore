@@ -22,7 +22,7 @@ public class BusinessService {
     private BigDecimal priceAmount;
     private String currency;
     private String colorHex;
-    private Boolean isActive;
+    private Boolean active;
     private Instant createdAt;
 
     public BusinessService() {
@@ -96,11 +96,11 @@ public class BusinessService {
     }
 
     public Boolean getActive() {
-        return isActive;
+        return active;
     }
 
     public void setActive(Boolean active) {
-        isActive = active;
+        active = active;
     }
 
     public Instant getCreatedAt() {
@@ -120,7 +120,7 @@ public class BusinessService {
         this.priceAmount = priceAmount;
         this.currency = currency;
         this.colorHex = colorHex;
-        this.isActive = isActive;
+        this.active = active;
         this.createdAt = createdAt;
     }
 }
