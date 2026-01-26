@@ -18,11 +18,17 @@ public class Business {
     @Column(nullable = false)
     private String name;
 
-    private String industry;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "industry_id")
+    private Industry industry;
+
     private String phone;
     private String email;
     private String timezone;
     private String address;
+
+    @Column(name = "logo_url")
+    private String logoUrl;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -62,11 +68,11 @@ public class Business {
         this.name = name;
     }
 
-    public String getIndustry() {
+    public Industry  getIndustry() {
         return industry;
     }
 
-    public void setIndustry(String industry) {
+    public void setIndustry(Industry  industry) {
         this.industry = industry;
     }
 
@@ -102,6 +108,9 @@ public class Business {
         this.address = address;
     }
 
+    public String getLogoUrl() { return logoUrl; }
+    public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
+
     public Instant getCreatedAt() {
         return createdAt;
     }
@@ -110,7 +119,7 @@ public class Business {
         this.createdAt = createdAt;
     }
 
-    public Business(Long id, Long ownerUserId, String industry, String phone, String name, String email, String timezone, String address, Instant createdAt) {
+    public Business(Long id, Long ownerUserId, Industry industry, String phone, String name, String email, String timezone, String address, Instant createdAt) {
         this.id = id;
         this.ownerUserId = ownerUserId;
         this.industry = industry;

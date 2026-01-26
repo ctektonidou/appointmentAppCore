@@ -12,6 +12,10 @@ public interface StaffRepository extends JpaRepository<Staff, Long> {
 
     List<Staff> findByBusiness_IdAndIsActiveTrueOrderByFirstNameAscLastNameAsc(Long businessId);
 
+    List<Staff> findByBusiness_IdAndIsActiveTrueOrderByFirstNameAsc(Long businessId);
+
+    List<Staff> findByBusiness_IdOrderByFirstNameAsc(Long businessId);
+
     Optional<Staff> findByIdAndBusiness_Id(Long staffId, Long businessId);
 
     boolean existsByBusiness_IdAndEmailIgnoreCase(Long businessId, String email);

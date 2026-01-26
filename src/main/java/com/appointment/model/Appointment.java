@@ -28,6 +28,9 @@ public class Appointment {
     @JoinColumn(name = "staff_id", nullable = false)
     private Staff staff;
 
+    @Column(name = "customer_user_id")
+    private Long customerUserId;
+
     // Embedded client info
     @Column(name = "client_name", nullable = false)
     private String clientName;
@@ -49,7 +52,7 @@ public class Appointment {
     private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name="status", nullable=false)
     private AppointmentStatus status = AppointmentStatus.SCHEDULED;
 
     @Enumerated(EnumType.STRING)
@@ -215,11 +218,16 @@ public class Appointment {
         this.startTime = startTime;
     }
 
-    public Appointment(Long id, BusinessService service, Business business, Staff staff, String clientName, String clientEmail, String clientPhone, String clientNotes, LocalDateTime startTime, LocalDateTime endTime, AppointmentStatus status, AppointmentSource source, String manageToken, LocalDateTime manageTokenExpiresAt, Instant updatedAt, Instant createdAt) {
+    public Long getCustomerUserId() { return customerUserId; }
+
+    public void setCustomerUserId(Long customerUserId) { this.customerUserId = customerUserId; }
+
+    public Appointment(Long id, BusinessService service, Business business, Staff staff, Long customerUserId, String clientName, String clientEmail, String clientPhone, String clientNotes, LocalDateTime startTime, LocalDateTime endTime, AppointmentStatus status, AppointmentSource source, String manageToken, LocalDateTime manageTokenExpiresAt, Instant updatedAt, Instant createdAt) {
         this.id = id;
         this.service = service;
         this.business = business;
         this.staff = staff;
+        this.customerUserId = customerUserId;
         this.clientName = clientName;
         this.clientEmail = clientEmail;
         this.clientPhone = clientPhone;

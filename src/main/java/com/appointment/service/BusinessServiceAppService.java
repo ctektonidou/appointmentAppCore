@@ -26,7 +26,7 @@ public class BusinessServiceAppService {
     @Transactional(readOnly = true)
     public List<ServiceResponse> listServices(Long businessId, boolean activeOnly) {
         List<BusinessService> services = activeOnly
-                ? serviceRepo.findByBusiness_IdAndIsActiveTrueOrderByNameAsc(businessId)
+                ? serviceRepo.findByBusiness_IdAndActiveTrueOrderByNameAsc(businessId)
                 : serviceRepo.findByBusiness_IdOrderByNameAsc(businessId);
 
         return services.stream().map(this::toResponse).toList();

@@ -18,11 +18,21 @@ public class BusinessService {
 
     private String name;
     private String description;
+
+    @Column(name = "duration_minutes")
     private Integer durationMinutes;
+
+    @Column(name = "price_amount")
     private BigDecimal priceAmount;
     private String currency;
+
+    @Column(name = "color_hex")
     private String colorHex;
+
+    @Column(name = "is_active")
     private Boolean active;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     public BusinessService() {

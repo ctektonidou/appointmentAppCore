@@ -5,10 +5,7 @@ import java.time.Instant;
 import java.time.LocalTime;
 
 @Entity
-@Table(
-        name = "business_hours",
-        uniqueConstraints = @UniqueConstraint(name = "uq_business_hours_business_day", columnNames = {"business_id", "day_of_week"})
-)
+@Table(name = "business_hours")
 public class BusinessHours {
 
     @Id
@@ -20,10 +17,10 @@ public class BusinessHours {
     private Business business;
 
     @Column(name = "day_of_week", nullable = false)
-    private Integer dayOfWeek; // 0..6
+    private Integer dayOfWeek; // 1 = Monday ... 7 = Sunday
 
     @Column(name = "is_open", nullable = false)
-    private Boolean isOpen = false;
+    private Boolean isOpen = true;
 
     @Column(name = "open_time")
     private LocalTime openTime;
@@ -35,7 +32,6 @@ public class BusinessHours {
     private Instant createdAt;
 
     public BusinessHours() {
-
     }
 
     @PrePersist
@@ -43,71 +39,33 @@ public class BusinessHours {
         this.createdAt = Instant.now();
     }
 
-    // getters/setters
+    // getters / setters
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public void setId(Long id) { this.id = id; }
 
-    public Business getBusiness() {
-        return business;
-    }
+    public Business getBusiness() { return business; }
 
-    public void setBusiness(Business business) {
-        this.business = business;
-    }
+    public void setBusiness(Business business) { this.business = business; }
 
-    public Integer getDayOfWeek() {
-        return dayOfWeek;
-    }
+    public Integer getDayOfWeek() { return dayOfWeek; }
 
-    public void setDayOfWeek(Integer dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
-    }
+    public void setDayOfWeek(Integer dayOfWeek) { this.dayOfWeek = dayOfWeek; }
 
-    public Boolean getOpen() {
-        return isOpen;
-    }
+    public Boolean getOpen() { return isOpen; }
 
-    public void setOpen(Boolean open) {
-        isOpen = open;
-    }
+    public void setOpen(Boolean open) { isOpen = open; }
 
-    public LocalTime getOpenTime() {
-        return openTime;
-    }
+    public LocalTime getOpenTime() { return openTime; }
 
-    public void setOpenTime(LocalTime openTime) {
-        this.openTime = openTime;
-    }
+    public void setOpenTime(LocalTime openTime) { this.openTime = openTime; }
 
-    public LocalTime getCloseTime() {
-        return closeTime;
-    }
+    public LocalTime getCloseTime() { return closeTime; }
 
-    public void setCloseTime(LocalTime closeTime) {
-        this.closeTime = closeTime;
-    }
+    public void setCloseTime(LocalTime closeTime) { this.closeTime = closeTime; }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    public Instant getCreatedAt() { return createdAt; }
 
-    public void setCreatedAt(Instant createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public BusinessHours(Long id, Business business, Integer dayOfWeek, Boolean isOpen, LocalTime openTime, LocalTime closeTime, Instant createdAt) {
-        this.id = id;
-        this.business = business;
-        this.dayOfWeek = dayOfWeek;
-        this.isOpen = isOpen;
-        this.openTime = openTime;
-        this.closeTime = closeTime;
-        this.createdAt = createdAt;
-    }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

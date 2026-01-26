@@ -10,7 +10,7 @@ public interface BusinessServiceRepository extends JpaRepository<BusinessService
 
     List<BusinessService> findByBusiness_IdOrderByNameAsc(Long businessId);
 
-    List<BusinessService> findByBusiness_IdAndIsActiveTrueOrderByNameAsc(Long businessId);
+    List<BusinessService> findByBusiness_IdAndActiveTrueOrderByNameAsc(Long businessId);
 
     Optional<BusinessService> findByIdAndBusiness_Id(Long id, Long businessId);
 

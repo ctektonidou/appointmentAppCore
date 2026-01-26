@@ -17,10 +17,13 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "first_name")
     private String firstName;
+
+    @Column(name = "last_name")
     private String lastName;
 
-    @Column(nullable = false)
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -28,6 +31,9 @@ public class User {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @Column(name = "role")
+    private String role;
 
     public User() {
 
@@ -111,7 +117,11 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
-    public User(Long id, String email, String passwordHash, String firstName, Boolean isActive, String lastName, Instant createdAt, Instant updatedAt) {
+    public String getRole() { return role; }
+
+    public void setRole(String role) { this.role = role; }
+
+    public User(Long id, String email, String passwordHash, String firstName, Boolean isActive, String lastName, Instant createdAt, Instant updatedAt, String role) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -120,5 +130,6 @@ public class User {
         this.lastName = lastName;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.role = role;
     }
 }
