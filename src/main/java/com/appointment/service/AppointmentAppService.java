@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.appointment.repository.BlockedDateRepository;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -70,29 +71,23 @@ public class AppointmentAppService {
         if (!req.getStartTime().isBefore(req.getEndTime())) {
             throw new IllegalArgumentException("startTime must be before endTime.");
         }
+        // We assume appointments do not cross midnight
+        LocalDate appointmentDate = req.getStartTime().toLocalDate();
 
-        //Check business-level blocked dates
-        boolean businessBlocked = !blockedDateRepo
-                .findByBusiness_IdAndStaffIsNullAndStartTimeLessThanAndEndTimeGreaterThan(
-                        businessId,
-                        req.getEndTime(),
-                        req.getStartTime()
-                ).isEmpty();
+        // 1) business-level blocked date (whole day closed)
+        boolean businessBlocked = blockedDateRepo
+                .existsByBusiness_IdAndStaffIsNullAndDate(businessId, appointmentDate);
 
         if (businessBlocked) {
-            throw new IllegalArgumentException("Business is closed for the selected time range.");
+            throw new IllegalArgumentException("Business is closed on this date.");
         }
 
-        //Check staff-level blocked dates
-        boolean staffBlocked = !blockedDateRepo
-                .findByStaff_IdAndStartTimeLessThanAndEndTimeGreaterThan(
-                        staff.getId(),
-                        req.getEndTime(),
-                        req.getStartTime()
-                ).isEmpty();
+        // 2) staff-level blocked date (staff is off that whole day)
+        boolean staffBlocked = blockedDateRepo
+                .existsByStaff_IdAndDate(staff.getId(), appointmentDate);
 
         if (staffBlocked) {
-            throw new IllegalArgumentException("Staff is not available (blocked) for the selected time range.");
+            throw new IllegalArgumentException("Staff is not available (blocked) on this date.");
         }
 
         boolean overlaps = apptRepo.existsByStaff_IdAndStartTimeLessThanAndEndTimeGreaterThan(
