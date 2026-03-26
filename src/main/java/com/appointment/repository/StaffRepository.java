@@ -18,7 +18,9 @@ public interface StaffRepository extends JpaRepository<Staff, Long> {
 
     Optional<Staff> findByIdAndBusiness_Id(Long staffId, Long businessId);
 
+    Optional<Staff> findByUser_Id(Long userId);
+
     boolean existsByBusiness_IdAndEmailIgnoreCase(Long businessId, String email);
 
-    Optional<Staff> findByBusinessIdAndEmailIgnoreCase(Long businessId, String email);
+    Optional<Staff> findByBusiness_IdAndEmailIgnoreCase(Long businessId, String email);
 }

@@ -33,6 +33,9 @@ public class Business {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "location")
+    private String location;
+
     public Business() {
 
     }
@@ -119,7 +122,11 @@ public class Business {
         this.createdAt = createdAt;
     }
 
-    public Business(Long id, Long ownerUserId, Industry industry, String phone, String name, String email, String timezone, String address, Instant createdAt) {
+    public String getLocation() { return location; }
+
+    public void setLocation(String location) { this.location = location; }
+
+    public Business(Long id, Long ownerUserId, Industry industry, String phone, String name, String email, String timezone, String address, Instant createdAt, String Location) {
         this.id = id;
         this.ownerUserId = ownerUserId;
         this.industry = industry;
@@ -129,5 +136,6 @@ public class Business {
         this.timezone = timezone;
         this.address = address;
         this.createdAt = createdAt;
+        this.location = Location;
     }
 }

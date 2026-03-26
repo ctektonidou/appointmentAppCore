@@ -12,5 +12,24 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
 
     Optional<Business> findByIdAndOwnerUserId(Long businessId, Long ownerUserId);
 
+    Optional<Business> findFirstByOwnerUserId(Long ownerUserId);
+
     boolean existsByOwnerUserIdAndNameIgnoreCase(Long ownerUserId, String name);
+
+    List<Business> findByNameContainingIgnoreCaseOrderByNameAsc(String name);
+
+    List<Business> findByIndustry_IdOrderByNameAsc(Long industryId);
+
+    List<Business> findByNameContainingIgnoreCaseAndIndustry_IdOrderByNameAsc(
+            String name,
+            Long industryId
+    );
+
+    List<Business> findByLocationIgnoreCaseOrderByNameAsc(String location);
+
+    List<Business> findByNameContainingIgnoreCaseAndIndustry_IdAndLocationIgnoreCaseOrderByNameAsc(
+            String name,
+            Long industryId,
+            String location
+    );
 }

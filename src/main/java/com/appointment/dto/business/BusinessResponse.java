@@ -14,6 +14,7 @@ public class BusinessResponse {
     private String address;
     private String logoUrl;
     private Instant createdAt;
+    private String location;
 
     public BusinessResponse(
             Long id,
@@ -25,7 +26,8 @@ public class BusinessResponse {
             String timezone,
             String address,
             String logoUrl,
-            Instant createdAt
+            Instant createdAt,
+            String location
     ) {
         this.id = id;
         this.ownerUserId = ownerUserId;
@@ -37,6 +39,7 @@ public class BusinessResponse {
         this.address = address;
         this.logoUrl = logoUrl;
         this.createdAt = createdAt;
+        this.location = location;
     }
 
     public Long getId() {
@@ -78,4 +81,6 @@ public class BusinessResponse {
     public Instant getCreatedAt() {
         return createdAt;
     }
+
+    public String getLocation() {return location;}
 }

@@ -76,7 +76,7 @@ public class AuthService {
         Business business = resolveBusinessFromCode(businessCode);
 
         Optional<Staff> existingStaffOpt =
-                staffRepository.findByBusinessIdAndEmailIgnoreCase(business.getId(), email);
+                staffRepository.findByBusiness_IdAndEmailIgnoreCase(business.getId(), email);
 
         if (existingStaffOpt.isPresent()) {
             Staff existingStaff = existingStaffOpt.get();

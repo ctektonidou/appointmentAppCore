@@ -88,11 +88,10 @@ public class StaffAppService {
     }
 
     @Transactional
-    public void deactivate(Long businessId, Long staffId) {
+    public void delete(Long businessId, Long staffId) {
         Staff s = staffRepo.findByIdAndBusiness_Id(staffId, businessId)
                 .orElseThrow(() -> new IllegalArgumentException("Staff not found for this business."));
-        s.setActive(false);
-        staffRepo.save(s);
+        staffRepo.delete(s);
     }
 
     private StaffResponse toResponse(Staff s) {

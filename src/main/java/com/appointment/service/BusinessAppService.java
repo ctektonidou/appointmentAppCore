@@ -54,6 +54,7 @@ public class BusinessAppService {
         b.setTimezone(req.getTimezone());
         b.setAddress(req.getAddress());
         b.setLogoUrl(req.getLogoUrl());
+        b.setLocation(req.getLocation());
 
         if (req.getIndustryId() != null) {
             Industry industry = industryRepo.findById(req.getIndustryId())
@@ -108,7 +109,44 @@ public class BusinessAppService {
                 b.getTimezone(),
                 b.getAddress(),
                 b.getLogoUrl(),
-                b.getCreatedAt()
+                b.getCreatedAt(),
+                b.getLocation()
         );
     }
+
+    @Transactional(readOnly = true)
+    public List<BusinessResponse> publicSearch(String name, Long industryId) {
+        String safeName = name == null ? "" : name.trim();
+
+        List<Business> businesses;
+
+        if (!safeName.isEmpty() && industryId != null) {
+            businesses = businessRepo.findByNameContainingIgnoreCaseAndIndustry_IdOrderByNameAsc(
+                    safeName,
+                    industryId
+            );
+        } else if (!safeName.isEmpty()) {
+            businesses = businessRepo.findByNameContainingIgnoreCaseOrderByNameAsc(safeName);
+        } else if (industryId != null) {
+            businesses = businessRepo.findByIndustry_IdOrderByNameAsc(industryId);
+        } else {
+            businesses = businessRepo.findAll()
+                    .stream()
+                    .sorted((a, b) -> a.getName().compareToIgnoreCase(b.getName()))
+                    .toList();
+        }
+
+        return businesses.stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public BusinessResponse getPrimaryBusinessByOwnerUserId(Long ownerUserId) {
+        Business business = businessRepo.findFirstByOwnerUserId(ownerUserId)
+                .orElseThrow(() -> new IllegalArgumentException("No business found for this owner."));
+
+        return toResponse(business);
+    }
+
 }

@@ -20,13 +20,19 @@ public class BusinessController {
         this.appService = appService;
     }
 
-    // GET /api/businesses?ownerUserId=123
+    @GetMapping("/public-search")
+    public List<BusinessResponse> publicSearch(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long industryId
+    ) {
+        return appService.publicSearch(name, industryId);
+    }
+
     @GetMapping
     public List<BusinessResponse> list(@RequestParam Long ownerUserId) {
         return appService.listForOwner(ownerUserId);
     }
 
-    // GET /api/businesses/{businessId}?ownerUserId=123
     @GetMapping("/{businessId}")
     public BusinessResponse getOne(
             @PathVariable Long businessId,
@@ -35,19 +41,22 @@ public class BusinessController {
         return appService.getOne(ownerUserId, businessId);
     }
 
-    // POST /api/businesses
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public BusinessResponse create(@Valid @RequestBody CreateBusinessRequest req) {
         return appService.create(req);
     }
 
-    // PUT /api/businesses/{businessId}
     @PutMapping("/{businessId}")
     public BusinessResponse update(
             @PathVariable Long businessId,
             @Valid @RequestBody UpdateBusinessRequest req
     ) {
         return appService.update(businessId, req);
+    }
+
+    @GetMapping("/owner/user/{userId}/primary")
+    public BusinessResponse getPrimaryBusinessByOwnerUserId(@PathVariable Long userId) {
+        return appService.getPrimaryBusinessByOwnerUserId(userId);
     }
 }

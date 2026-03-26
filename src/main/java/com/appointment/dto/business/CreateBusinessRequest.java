@@ -17,6 +17,7 @@ public class CreateBusinessRequest {
     private String timezone;
     private String address;
     private String logoUrl;
+    private String location;
 
     public Long getOwnerUserId() {
         return ownerUserId;
@@ -81,4 +82,8 @@ public class CreateBusinessRequest {
     public void setLogoUrl(String logoUrl) {
         this.logoUrl = logoUrl;
     }
+
+    public String getLocation() { return location; }
+
+    public void setLocation(String location) { this.location = location; }
 }

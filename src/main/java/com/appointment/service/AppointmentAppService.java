@@ -1,5 +1,6 @@
 package com.appointment.service;
 
+import com.appointment.dto.appointment.AppointmentListItemResponse;
 import com.appointment.dto.appointment.AppointmentResponse;
 import com.appointment.dto.appointment.CreateAppointmentRequest;
 import com.appointment.model.Appointment;
@@ -144,5 +145,134 @@ public class AppointmentAppService {
                 a.getStatus(),
                 a.getSource()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentListItemResponse> listForOwnerUser(
+            Long userId,
+            LocalDateTime from,
+            LocalDateTime to,
+            AppointmentStatus status,
+            Long staffId,
+            Long serviceId,
+            String search
+    ) {
+        Business business = businessRepo.findFirstByOwnerUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Business not found for owner user."));
+
+        List<Appointment> appointments = apptRepo.findByBusiness_IdOrderByStartTimeDesc(business.getId());
+
+        String searchTerm = search == null ? "" : search.trim().toLowerCase();
+
+        return appointments.stream()
+                .filter(a -> from == null || !a.getStartTime().isBefore(from))
+                .filter(a -> to == null || !a.getStartTime().isAfter(to))
+                .filter(a -> status == null || a.getStatus() == status)
+                .filter(a -> staffId == null || a.getStaff().getId().equals(staffId))
+                .filter(a -> serviceId == null || a.getService().getId().equals(serviceId))
+                .filter(a -> {
+                    if (searchTerm.isBlank()) return true;
+
+                    String haystack = String.join(" ",
+                            safe(a.getClientName()),
+                            safe(a.getService().getName()),
+                            safe(a.getStaff().getFirstName()),
+                            safe(a.getStaff().getLastName())
+                    ).toLowerCase();
+
+                    return haystack.contains(searchTerm);
+                })
+                .map(this::toListItemResponse)
+                .toList();
+    }
+
+    private AppointmentListItemResponse toListItemResponse(Appointment a) {
+        String staffName = (safe(a.getStaff().getFirstName()) + " " + safe(a.getStaff().getLastName())).trim();
+
+        return new AppointmentListItemResponse(
+                a.getId(),
+                a.getStartTime(),
+                a.getEndTime(),
+                a.getClientName(),
+                a.getBusiness().getName(),
+                a.getService().getName(),
+                staffName,
+                a.getStatus()
+        );
+    }
+
+    private String safe(String value) {
+        return value == null ? "" : value;
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentListItemResponse> listForStaffUser(
+            Long userId,
+            LocalDateTime from,
+            LocalDateTime to,
+            AppointmentStatus status,
+            Long serviceId,
+            String search
+    ) {
+        Staff staff = staffRepo.findByUser_Id(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff not found for user."));
+
+        List<Appointment> appointments = apptRepo.findByStaff_IdOrderByStartTimeDesc(staff.getId());
+
+        String searchTerm = search == null ? "" : search.trim().toLowerCase();
+
+        return appointments.stream()
+                .filter(a -> from == null || !a.getStartTime().isBefore(from))
+                .filter(a -> to == null || !a.getStartTime().isAfter(to))
+                .filter(a -> status == null || a.getStatus() == status)
+                .filter(a -> serviceId == null || a.getService().getId().equals(serviceId))
+                .filter(a -> {
+                    if (searchTerm.isBlank()) return true;
+
+                    String haystack = String.join(" ",
+                            safe(a.getClientName()),
+                            safe(a.getService().getName())
+                    ).toLowerCase();
+
+                    return haystack.contains(searchTerm);
+                })
+                .map(this::toListItemResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentListItemResponse> listForCustomerUser(
+            Long userId,
+            LocalDateTime from,
+            LocalDateTime to,
+            AppointmentStatus status,
+            Long businessId,
+            Long serviceId,
+            String search
+    ) {
+        List<Appointment> appointments = apptRepo.findByCustomerUserIdOrderByStartTimeDesc(userId);
+
+        String searchTerm = search == null ? "" : search.trim().toLowerCase();
+
+        return appointments.stream()
+                .filter(a -> from == null || !a.getStartTime().isBefore(from))
+                .filter(a -> to == null || !a.getStartTime().isAfter(to))
+                .filter(a -> status == null || a.getStatus() == status)
+                .filter(a -> businessId == null || a.getBusiness().getId().equals(businessId))
+                .filter(a -> serviceId == null || a.getService().getId().equals(serviceId))
+                .filter(a -> {
+                    if (searchTerm.isBlank()) return true;
+
+                    String haystack = String.join(" ",
+                            safe(a.getBusiness().getName()),
+                            safe(a.getService().getName()),
+                            safe(a.getStaff().getFirstName()),
+                            safe(a.getStaff().getLastName())
+                    ).toLowerCase();
+
+                    return haystack.contains(searchTerm);
+                })
+                .map(this::toListItemResponse)
+                .toList();
     }
 }

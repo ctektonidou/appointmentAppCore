@@ -22,7 +22,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     Optional<Appointment> findByManageToken(String manageToken);
 
-    // For conflict checks: any overlap with existing appointments for staff
     List<Appointment> findByStaff_IdAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
             Long staffId,
             List<AppointmentStatus> statuses,
@@ -34,4 +33,54 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             Long staffId, LocalDateTime endExclusive, LocalDateTime startExclusive
     );
 
+    long countByCustomerUserIdAndStartTimeBetween(
+            Long customerUserId,
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
+    long countByCustomerUserIdAndStatusAndStartTimeBetween(
+            Long customerUserId,
+            AppointmentStatus status,
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
+    List<Appointment> findByCustomerUserIdAndStartTimeBetweenOrderByStartTimeAsc(
+            Long customerUserId,
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
+    long countByStaff_IdAndStartTimeBetween(
+            Long staffId,
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
+    long countByStaff_IdAndStatusAndStartTimeBetween(
+            Long staffId,
+            AppointmentStatus status,
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
+    long countByBusiness_IdAndStartTimeBetween(
+            Long businessId,
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
+    long countByBusiness_IdAndStatusAndStartTimeBetween(
+            Long businessId,
+            AppointmentStatus status,
+            LocalDateTime from,
+            LocalDateTime to
+    );
+
+    List<Appointment> findByBusiness_IdOrderByStartTimeDesc(Long businessId);
+
+    List<Appointment> findByStaff_IdOrderByStartTimeDesc(Long staffId);
+    
+    List<Appointment> findByCustomerUserIdOrderByStartTimeDesc(Long customerUserId);
 }

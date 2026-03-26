@@ -1,5 +1,6 @@
 package com.appointment.controller;
 
+import com.appointment.dto.appointment.AppointmentListItemResponse;
 import com.appointment.dto.appointment.AppointmentResponse;
 import com.appointment.dto.appointment.CreateAppointmentRequest;
 import com.appointment.model.enums.AppointmentStatus;

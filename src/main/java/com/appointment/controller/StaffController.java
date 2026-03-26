@@ -52,7 +52,7 @@ public class StaffController {
     // DELETE /api/businesses/{businessId}/staff/{staffId}  (soft delete)
     @DeleteMapping("/{staffId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deactivate(@PathVariable Long businessId, @PathVariable Long staffId) {
-        appService.deactivate(businessId, staffId);
+    public void delete(@PathVariable Long businessId, @PathVariable Long staffId) {
+        appService.delete(businessId, staffId);
     }
 }
