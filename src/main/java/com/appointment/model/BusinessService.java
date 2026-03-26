@@ -110,7 +110,7 @@ public class BusinessService {
     }
 
     public void setActive(Boolean active) {
-        active = active;
+        this.active = active;
     }
 
     public Instant getCreatedAt() {
@@ -119,6 +119,11 @@ public class BusinessService {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @PrePersist
+    void onCreate() {
+        this.createdAt = Instant.now();
     }
 
     public BusinessService(Long id, Business business, String name, String description, Integer durationMinutes, BigDecimal priceAmount, String currency, String colorHex, Boolean isActive, Instant createdAt) {
@@ -130,7 +135,7 @@ public class BusinessService {
         this.priceAmount = priceAmount;
         this.currency = currency;
         this.colorHex = colorHex;
-        this.active = active;
+        this.active = isActive;
         this.createdAt = createdAt;
     }
 }

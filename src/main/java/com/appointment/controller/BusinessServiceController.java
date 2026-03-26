@@ -76,13 +76,12 @@ public class BusinessServiceController {
         return appService.setActive(businessId, serviceId, false);
     }
 
-    // DELETE (soft delete)
     @DeleteMapping("/{serviceId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void softDelete(
+    public void delete(
             @PathVariable Long businessId,
             @PathVariable Long serviceId
     ) {
-        appService.setActive(businessId, serviceId, false);
+        appService.deleteService(businessId, serviceId);
     }
 }

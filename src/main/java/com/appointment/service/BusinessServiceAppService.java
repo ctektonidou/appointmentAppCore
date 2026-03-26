@@ -115,4 +115,12 @@ public class BusinessServiceAppService {
         return toResponse(serviceRepo.save(s));
     }
 
+    @Transactional
+    public void deleteService(Long businessId, Long serviceId) {
+        BusinessService s = serviceRepo.findByIdAndBusiness_Id(serviceId, businessId)
+                .orElseThrow(() -> new IllegalArgumentException("Service not found for this business."));
+
+        serviceRepo.delete(s);
+    }
+
 }
