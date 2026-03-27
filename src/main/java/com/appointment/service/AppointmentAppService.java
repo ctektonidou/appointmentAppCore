@@ -3,6 +3,7 @@ package com.appointment.service;
 import com.appointment.dto.appointment.AppointmentListItemResponse;
 import com.appointment.dto.appointment.AppointmentResponse;
 import com.appointment.dto.appointment.CreateAppointmentRequest;
+import com.appointment.dto.appointment.UpdateAppointmentRequest;
 import com.appointment.model.Appointment;
 import com.appointment.model.Business;
 import com.appointment.model.BusinessService;
@@ -191,12 +192,19 @@ public class AppointmentAppService {
 
         return new AppointmentListItemResponse(
                 a.getId(),
+                a.getBusiness().getId(),
+                a.getService().getId(),
+                a.getStaff().getId(),
+                a.getCustomerUserId(),
                 a.getStartTime(),
                 a.getEndTime(),
                 a.getClientName(),
                 a.getBusiness().getName(),
                 a.getService().getName(),
                 staffName,
+                a.getClientEmail(),
+                a.getClientPhone(),
+                a.getClientNotes(),
                 a.getStatus()
         );
     }
@@ -274,5 +282,77 @@ public class AppointmentAppService {
                 })
                 .map(this::toListItemResponse)
                 .toList();
+    }
+
+    @Transactional
+    public AppointmentResponse update(Long businessId, Long appointmentId, UpdateAppointmentRequest req) {
+        Appointment appointment = apptRepo.findByIdAndBusiness_Id(appointmentId, businessId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found for this business."));
+
+        Business business = businessRepo.findById(businessId)
+                .orElseThrow(() -> new IllegalArgumentException("Business not found: " + businessId));
+
+        BusinessService service = serviceRepo.findByIdAndBusiness_Id(req.getServiceId(), businessId)
+                .orElseThrow(() -> new IllegalArgumentException("Service not found for this business."));
+
+        Staff staff = staffRepo.findByIdAndBusiness_Id(req.getStaffId(), businessId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff not found for this business."));
+
+        if (!req.getStartTime().isBefore(req.getEndTime())) {
+            throw new IllegalArgumentException("startTime must be before endTime.");
+        }
+
+        LocalDate appointmentDate = req.getStartTime().toLocalDate();
+
+        boolean businessBlocked = blockedDateRepo
+                .existsByBusiness_IdAndStaffIsNullAndDate(businessId, appointmentDate);
+
+        if (businessBlocked) {
+            throw new IllegalArgumentException("Business is closed on this date.");
+        }
+
+        boolean staffBlocked = blockedDateRepo
+                .existsByStaff_IdAndDate(staff.getId(), appointmentDate);
+
+        if (staffBlocked) {
+            throw new IllegalArgumentException("Staff is not available (blocked) on this date.");
+        }
+
+        List<AppointmentStatus> blockingStatuses = List.of(
+                AppointmentStatus.SCHEDULED,
+                AppointmentStatus.COMPLETED,
+                AppointmentStatus.NO_SHOW
+        );
+
+        boolean overlaps = apptRepo
+                .findByStaff_IdAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
+                        staff.getId(),
+                        blockingStatuses,
+                        req.getEndTime(),
+                        req.getStartTime()
+                )
+                .stream()
+                .anyMatch(a -> !a.getId().equals(appointmentId));
+
+        if (overlaps) {
+            throw new IllegalArgumentException("Staff is not available for the selected time range.");
+        }
+
+        appointment.setBusiness(business);
+        appointment.setService(service);
+        appointment.setStaff(staff);
+
+        appointment.setCustomerUserId(req.getCustomerUserId());
+
+        appointment.setClientName(req.getClientName());
+        appointment.setClientEmail(req.getClientEmail());
+        appointment.setClientPhone(req.getClientPhone());
+        appointment.setClientNotes(req.getClientNotes());
+
+        appointment.setStartTime(req.getStartTime());
+        appointment.setEndTime(req.getEndTime());
+        appointment.setStatus(req.getStatus());
+
+        return toResponse(apptRepo.save(appointment));
     }
 }

@@ -16,4 +16,6 @@ public interface BlockedDateRepository extends JpaRepository<BlockedDate, Long> 
     boolean existsByStaff_IdAndDate(Long staffId, LocalDate date);
 
     List<BlockedDate> findByBusiness_Id(Long businessId);
+
+    List<BlockedDate> findByStaff_IdOrderByDateAsc(Long staffId);
 }

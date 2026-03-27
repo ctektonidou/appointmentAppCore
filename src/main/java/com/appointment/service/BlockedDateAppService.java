@@ -69,4 +69,47 @@ public class BlockedDateAppService {
                 bd.getReason()
         );
     }
+
+    @Transactional(readOnly = true)
+    public List<BlockedDateResponse> listForStaffUser(Long userId) {
+        Staff staff = staffRepo.findByUser_Id(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff not found for user: " + userId));
+
+        return blockedRepo.findByStaff_IdOrderByDateAsc(staff.getId()).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional
+    public BlockedDateResponse createForStaffUser(Long userId, CreateBlockedDateRequest req) {
+        Staff staff = staffRepo.findByUser_Id(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff not found for user: " + userId));
+
+        if (blockedRepo.existsByStaff_IdAndDate(staff.getId(), req.getDate())) {
+            throw new IllegalArgumentException("Blocked date already exists for this staff member.");
+        }
+
+        BlockedDate bd = new BlockedDate();
+        bd.setBusiness(staff.getBusiness());
+        bd.setStaff(staff);
+        bd.setDate(req.getDate());
+        bd.setReason(req.getReason());
+
+        return toResponse(blockedRepo.save(bd));
+    }
+
+    @Transactional
+    public void deleteForStaffUser(Long userId, Long blockedDateId) {
+        Staff staff = staffRepo.findByUser_Id(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff not found for user: " + userId));
+
+        BlockedDate blockedDate = blockedRepo.findById(blockedDateId)
+                .orElseThrow(() -> new IllegalArgumentException("Blocked date not found: " + blockedDateId));
+
+        if (blockedDate.getStaff() == null || !blockedDate.getStaff().getId().equals(staff.getId())) {
+            throw new IllegalArgumentException("Blocked date does not belong to this staff member.");
+        }
+
+        blockedRepo.delete(blockedDate);
+    }
 }

@@ -1,6 +1,8 @@
 package com.appointment.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+
 import java.time.Instant;
 import java.time.LocalTime;
 
@@ -16,8 +18,9 @@ public class BusinessHours {
     @JoinColumn(name = "business_id", nullable = false)
     private Business business;
 
-    @Column(name = "day_of_week", nullable = false)
-    private Integer dayOfWeek; // 1 = Monday ... 7 = Sunday
+    @Column(name = "day_of_week")
+    @NotNull
+    private Integer dayOfWeek; // 0 = Monday ... 6 = Sunday
 
     @Column(name = "is_open", nullable = false)
     private Boolean isOpen = true;

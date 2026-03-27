@@ -3,6 +3,7 @@ package com.appointment.controller;
 import com.appointment.dto.appointment.AppointmentListItemResponse;
 import com.appointment.dto.appointment.AppointmentResponse;
 import com.appointment.dto.appointment.CreateAppointmentRequest;
+import com.appointment.dto.appointment.UpdateAppointmentRequest;
 import com.appointment.model.enums.AppointmentStatus;
 import com.appointment.service.AppointmentAppService;
 import jakarta.validation.Valid;
@@ -52,5 +53,14 @@ public class AppointmentController {
                                          @PathVariable Long appointmentId,
                                          @RequestParam("value") AppointmentStatus status) {
         return appService.setStatus(businessId, appointmentId, status);
+    }
+
+    @PutMapping("/{appointmentId}")
+    public AppointmentResponse update(
+            @PathVariable Long businessId,
+            @PathVariable Long appointmentId,
+            @Valid @RequestBody UpdateAppointmentRequest req
+    ) {
+        return appService.update(businessId, appointmentId, req);
     }
 }

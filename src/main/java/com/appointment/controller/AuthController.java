@@ -1,7 +1,9 @@
 package com.appointment.controller;
 
 import com.appointment.dto.auth.*;
+import com.appointment.model.Business;
 import com.appointment.model.User;
+import com.appointment.repository.BusinessRepository;
 import com.appointment.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +14,11 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final BusinessRepository businessRepository;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, BusinessRepository businessRepository) {
         this.authService = authService;
+        this.businessRepository = businessRepository;
     }
 
     @PostMapping("/login")
@@ -67,13 +71,18 @@ public class AuthController {
     }
 
     private AuthResponseDto toAuthResponse(User user, String message) {
+        Long businessId = businessRepository.findFirstByOwnerUserId(user.getId())
+                .map(Business::getId)
+                .orElse(null);
+
         return new AuthResponseDto(
                 user.getId(),
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getRole(),
-                message
+                message,
+                businessId
         );
     }
 }

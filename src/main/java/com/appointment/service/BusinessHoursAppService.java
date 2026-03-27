@@ -35,8 +35,25 @@ public class BusinessHoursAppService {
         Business business = businessRepo.findById(businessId)
                 .orElseThrow(() -> new IllegalArgumentException("Business not found: " + businessId));
 
-        // Simple strategy: wipe and re-insert
-        hoursRepo.deleteByBusiness_Id(businessId);
+        for (BusinessHoursDto dto : dtos) {
+            if (dto.getDayOfWeek() == null || dto.getDayOfWeek() < 0 || dto.getDayOfWeek() > 6) {
+                throw new IllegalArgumentException("dayOfWeek must be between 0 and 6.");
+            }
+
+            if (Boolean.TRUE.equals(dto.getIsOpen())) {
+                if (dto.getOpenTime() == null || dto.getCloseTime() == null) {
+                    throw new IllegalArgumentException("Open days must have openTime and closeTime.");
+                }
+
+                if (!dto.getOpenTime().isBefore(dto.getCloseTime())) {
+                    throw new IllegalArgumentException("openTime must be before closeTime.");
+                }
+            }
+        }
+
+        List<BusinessHours> existing = hoursRepo.findByBusiness_Id(businessId);
+        hoursRepo.deleteAll(existing);
+        hoursRepo.flush(); // IMPORTANT
 
         List<BusinessHours> entities = dtos.stream().map(dto -> {
             BusinessHours bh = new BusinessHours();
@@ -48,7 +65,10 @@ public class BusinessHoursAppService {
             return bh;
         }).toList();
 
-        return hoursRepo.saveAll(entities).stream().map(this::toDto).toList();
+        return hoursRepo.saveAll(entities)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
     private BusinessHoursDto toDto(BusinessHours bh) {
