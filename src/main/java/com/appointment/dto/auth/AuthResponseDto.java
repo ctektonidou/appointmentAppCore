@@ -8,9 +8,10 @@ public class AuthResponseDto {
     private String role;
     private String message;
     private Long businessId;
+    private Long staffId;
 
     public AuthResponseDto(Long id, String email, String firstName, String lastName,
-                           String role, String message, Long businessId) {
+                           String role, String message, Long businessId, Long staffId) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
@@ -18,6 +19,7 @@ public class AuthResponseDto {
         this.role = role;
         this.message = message;
         this.businessId = businessId;
+        this.staffId = staffId;
     }
 
     public Long getId() { return id; }
@@ -27,4 +29,5 @@ public class AuthResponseDto {
     public String getRole() { return role; }
     public String getMessage() { return message; }
     public Long getBusinessId() { return businessId; }
+    public Long getStaffId() { return staffId; }
 }

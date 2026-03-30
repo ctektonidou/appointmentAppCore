@@ -38,8 +38,17 @@ public class StaffAvailabilityAppService {
         Staff staff = staffRepo.findById(staffId)
                 .orElseThrow(() -> new IllegalArgumentException("Staff not found: " + staffId));
 
-        // delete the old weekly template
+        long distinctDays = dtos.stream()
+                .map(StaffAvailabilityDto::getDayOfWeek)
+                .distinct()
+                .count();
+
+        if (distinctDays != dtos.size()) {
+            throw new IllegalArgumentException("Duplicate dayOfWeek values are not allowed");
+        }
+
         availabilityRepo.deleteByStaff_Id(staffId);
+        availabilityRepo.flush();
 
         List<StaffAvailability> entities = dtos.stream().map(dto -> {
             StaffAvailability sa = new StaffAvailability();
@@ -51,7 +60,10 @@ public class StaffAvailabilityAppService {
             return sa;
         }).toList();
 
-        return availabilityRepo.saveAll(entities).stream()
+        List<StaffAvailability> saved = availabilityRepo.saveAll(entities);
+        availabilityRepo.flush();
+
+        return saved.stream()
                 .sorted(Comparator.comparing(StaffAvailability::getDayOfWeek)
                         .thenComparing(StaffAvailability::getStartTime))
                 .map(this::toDto)

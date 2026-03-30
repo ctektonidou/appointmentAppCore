@@ -2,8 +2,10 @@ package com.appointment.controller;
 
 import com.appointment.dto.auth.*;
 import com.appointment.model.Business;
+import com.appointment.model.Staff;
 import com.appointment.model.User;
 import com.appointment.repository.BusinessRepository;
+import com.appointment.repository.StaffRepository;
 import com.appointment.service.AuthService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +17,16 @@ public class AuthController {
 
     private final AuthService authService;
     private final BusinessRepository businessRepository;
+    private final StaffRepository staffRepository;
 
-    public AuthController(AuthService authService, BusinessRepository businessRepository) {
+    public AuthController(
+            AuthService authService,
+            BusinessRepository businessRepository,
+            StaffRepository staffRepository
+    ) {
         this.authService = authService;
         this.businessRepository = businessRepository;
+        this.staffRepository = staffRepository;
     }
 
     @PostMapping("/login")
@@ -71,9 +79,22 @@ public class AuthController {
     }
 
     private AuthResponseDto toAuthResponse(User user, String message) {
-        Long businessId = businessRepository.findFirstByOwnerUserId(user.getId())
-                .map(Business::getId)
-                .orElse(null);
+        Long businessId = null;
+        Long staffId = null;
+
+        if ("owner".equalsIgnoreCase(user.getRole())) {
+            businessId = businessRepository.findFirstByOwnerUserId(user.getId())
+                    .map(Business::getId)
+                    .orElse(null);
+        } else if ("staff".equalsIgnoreCase(user.getRole())) {
+            Staff staff = staffRepository.findByUser_Id(user.getId())
+                    .orElse(null);
+
+            if (staff != null) {
+                staffId = staff.getId();
+                businessId = staff.getBusiness() != null ? staff.getBusiness().getId() : null;
+            }
+        }
 
         return new AuthResponseDto(
                 user.getId(),
@@ -82,7 +103,8 @@ public class AuthController {
                 user.getLastName(),
                 user.getRole(),
                 message,
-                businessId
+                businessId,
+                staffId
         );
     }
 }
