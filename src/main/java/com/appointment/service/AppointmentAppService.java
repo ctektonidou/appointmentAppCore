@@ -368,7 +368,7 @@ public class AppointmentAppService {
     }
 
     @Transactional(readOnly = true)
-    public List<String> getAvailableSlots(Long businessId, Long serviceId, Long staffId, LocalDate date) {
+    public List<String> getAvailableSlots(Long businessId, Long serviceId, Long staffId, LocalDate date, Long appointmentId) {
         Business business = businessRepo.findById(businessId)
                 .orElseThrow(() -> new IllegalArgumentException("Business not found: " + businessId));
 
@@ -448,14 +448,15 @@ public class AppointmentAppService {
             LocalDateTime candidateStartDateTime = LocalDateTime.of(date, candidateStart);
             LocalDateTime candidateEndDateTime = candidateStartDateTime.plusMinutes(durationMinutes);
 
-            boolean overlaps = !apptRepo
+            boolean overlaps = apptRepo
                     .findByStaff_IdAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
                             staffId,
                             blockingStatuses,
                             candidateEndDateTime,
                             candidateStartDateTime
                     )
-                    .isEmpty();
+                    .stream()
+                    .anyMatch(a -> appointmentId == null || !a.getId().equals(appointmentId));
 
             if (!overlaps) {
                 availableSlots.add(candidateStart.toString());

@@ -71,8 +71,9 @@ public class AppointmentController {
             @PathVariable Long businessId,
             @RequestParam Long serviceId,
             @RequestParam Long staffId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(required = false) Long appointmentId
     ) {
-        return appService.getAvailableSlots(businessId, serviceId, staffId, date);
+        return appService.getAvailableSlots(businessId, serviceId, staffId, date, appointmentId);
     }
 }
