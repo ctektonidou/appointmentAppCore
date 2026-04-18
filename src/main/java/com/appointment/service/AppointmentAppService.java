@@ -17,8 +17,13 @@ import com.appointment.repository.StaffRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.appointment.repository.BlockedDateRepository;
+import com.appointment.model.BusinessHours;
+import com.appointment.model.StaffAvailability;
+import com.appointment.repository.BusinessHoursRepository;
+import com.appointment.repository.StaffAvailabilityRepository;
 
-
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,17 +36,23 @@ public class AppointmentAppService {
     private final BusinessServiceRepository serviceRepo;
     private final StaffRepository staffRepo;
     private final BlockedDateRepository blockedDateRepo;
+    private final BusinessHoursRepository businessHoursRepo;
+    private final StaffAvailabilityRepository staffAvailabilityRepo;
 
     public AppointmentAppService(AppointmentRepository apptRepo,
                                  BusinessRepository businessRepo,
                                  BusinessServiceRepository serviceRepo,
                                  StaffRepository staffRepo,
-                                 BlockedDateRepository blockedDateRepo) {
+                                 BlockedDateRepository blockedDateRepo,
+                                 BusinessHoursRepository businessHoursRepo,
+                                 StaffAvailabilityRepository staffAvailabilityRepo) {
         this.apptRepo = apptRepo;
         this.businessRepo = businessRepo;
         this.serviceRepo = serviceRepo;
         this.staffRepo = staffRepo;
         this.blockedDateRepo = blockedDateRepo;
+        this.businessHoursRepo = businessHoursRepo;
+        this.staffAvailabilityRepo = staffAvailabilityRepo;
     }
 
     @Transactional(readOnly = true)
@@ -354,5 +365,105 @@ public class AppointmentAppService {
         appointment.setStatus(req.getStatus());
 
         return toResponse(apptRepo.save(appointment));
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getAvailableSlots(Long businessId, Long serviceId, Long staffId, LocalDate date) {
+        Business business = businessRepo.findById(businessId)
+                .orElseThrow(() -> new IllegalArgumentException("Business not found: " + businessId));
+
+        BusinessService service = serviceRepo.findByIdAndBusiness_Id(serviceId, businessId)
+                .orElseThrow(() -> new IllegalArgumentException("Service not found for this business."));
+
+        Staff staff = staffRepo.findByIdAndBusiness_Id(staffId, businessId)
+                .orElseThrow(() -> new IllegalArgumentException("Staff not found for this business."));
+
+        boolean businessBlocked = blockedDateRepo
+                .existsByBusiness_IdAndStaffIsNullAndDate(businessId, date);
+
+        if (businessBlocked) {
+            return List.of();
+        }
+
+        boolean staffBlocked = blockedDateRepo
+                .existsByStaff_IdAndDate(staff.getId(), date);
+
+        if (staffBlocked) {
+            return List.of();
+        }
+
+        int dayOfWeek = date.getDayOfWeek().getValue() % 7; // Mon=1 ... Sat=6, Sun=0
+
+        BusinessHours businessHours = businessHoursRepo
+                .findByBusiness_IdAndDayOfWeek(businessId, dayOfWeek)
+                .orElse(null);
+
+        if (businessHours == null || !Boolean.TRUE.equals(businessHours.getOpen())
+                || businessHours.getOpenTime() == null
+                || businessHours.getCloseTime() == null) {
+            return List.of();
+        }
+
+        LocalTime windowStart = businessHours.getOpenTime();
+        LocalTime windowEnd = businessHours.getCloseTime();
+
+        StaffAvailability staffAvailability = staffAvailabilityRepo
+                .findByStaff_IdAndDayOfWeek(staffId, dayOfWeek)
+                .orElse(null);
+
+        if (staffAvailability != null) {
+            if (!Boolean.TRUE.equals(staffAvailability.getAvailable())
+                    || staffAvailability.getStartTime() == null
+                    || staffAvailability.getEndTime() == null) {
+                return List.of();
+            }
+
+            if (staffAvailability.getStartTime().isAfter(windowStart)) {
+                windowStart = staffAvailability.getStartTime();
+            }
+
+            if (staffAvailability.getEndTime().isBefore(windowEnd)) {
+                windowEnd = staffAvailability.getEndTime();
+            }
+        }
+
+        if (!windowStart.isBefore(windowEnd)) {
+            return List.of();
+        }
+
+        int durationMinutes = service.getDurationMinutes();
+        int slotStepMinutes = 30;
+
+        List<AppointmentStatus> blockingStatuses = List.of(
+                AppointmentStatus.SCHEDULED,
+                AppointmentStatus.COMPLETED,
+                AppointmentStatus.NO_SHOW
+        );
+
+        List<String> availableSlots = new ArrayList<>();
+
+        LocalTime candidateStart = windowStart;
+
+        while (!candidateStart.plusMinutes(durationMinutes).isAfter(windowEnd)) {
+            LocalDateTime candidateStartDateTime = LocalDateTime.of(date, candidateStart);
+            LocalDateTime candidateEndDateTime = candidateStartDateTime.plusMinutes(durationMinutes);
+
+            boolean overlaps = !apptRepo
+                    .findByStaff_IdAndStatusInAndStartTimeLessThanAndEndTimeGreaterThan(
+                            staffId,
+                            blockingStatuses,
+                            candidateEndDateTime,
+                            candidateStartDateTime
+                    )
+                    .isEmpty();
+
+            if (!overlaps) {
+                availableSlots.add(candidateStart.toString());
+            }
+
+            candidateStart = candidateStart.plusMinutes(slotStepMinutes);
+        }
+
+        return availableSlots;
     }
 }

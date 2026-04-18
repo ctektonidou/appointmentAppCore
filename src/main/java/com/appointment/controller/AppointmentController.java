@@ -9,8 +9,10 @@ import com.appointment.service.AppointmentAppService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -62,5 +64,15 @@ public class AppointmentController {
             @Valid @RequestBody UpdateAppointmentRequest req
     ) {
         return appService.update(businessId, appointmentId, req);
+    }
+
+    @GetMapping("/available-slots")
+    public List<String> getAvailableSlots(
+            @PathVariable Long businessId,
+            @RequestParam Long serviceId,
+            @RequestParam Long staffId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+    ) {
+        return appService.getAvailableSlots(businessId, serviceId, staffId, date);
     }
 }
