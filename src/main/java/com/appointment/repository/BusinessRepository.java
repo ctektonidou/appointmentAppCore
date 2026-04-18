@@ -2,6 +2,7 @@ package com.appointment.repository;
 
 import com.appointment.model.Business;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,4 +33,12 @@ public interface BusinessRepository extends JpaRepository<Business, Long> {
             Long industryId,
             String location
     );
+
+    @Query("""
+    select distinct b.location
+    from Business b
+    where b.location is not null and trim(b.location) <> ''
+    order by b.location asc
+    """)
+    List<String> findDistinctLocations();
 }
